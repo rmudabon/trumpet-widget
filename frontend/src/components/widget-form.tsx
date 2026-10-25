@@ -1,60 +1,39 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { LoaderCircle, Pencil, Plus } from 'lucide-react'
-import { Button } from './ui/button'
 import { widgetSchema, type Widget, type WidgetValues } from '../types/widget'
 
 type WidgetFormProps = {
-  initial?: Widget
-  onCancel?: () => void
-  onSave: (values: WidgetValues) => Promise<void>
-  busy: boolean
+  widget: Widget
+  onTextBlur: (value: string) => Promise<unknown>
 }
 
-export function WidgetForm({ initial, onCancel, onSave, busy }: WidgetFormProps) {
+export function WidgetForm({ widget, onTextBlur }: WidgetFormProps) {
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<WidgetValues>({
     resolver: zodResolver(widgetSchema),
-    defaultValues: initial
-      ? { widget_type: initial.widget_type, value: initial.value }
-      : { widget_type: 'text', value: '' },
+    defaultValues: { widget_type: widget.widget_type, value: widget.value },
   })
 
-  async function submit(values: WidgetValues) {
-    await onSave(values)
-    if (!initial) reset({ widget_type: 'text', value: '' })
-  }
+  const saveOnBlur = handleSubmit(async ({ value }) => {
+    if (value !== widget.value) await onTextBlur(value)
+  })
 
   return (
-    <form className="grid gap-4" onSubmit={handleSubmit(submit)}>
-      <input type="hidden" {...register('widget_type')} />
-      <label className="grid gap-2 text-sm font-medium">
-        <span>Widget text</span>
-        <textarea
-          className="border-input bg-background focus-visible:border-ring focus-visible:ring-ring/30 aria-invalid:border-destructive min-h-24 resize-y rounded-lg border px-3 py-2 text-sm shadow-xs transition outline-none focus-visible:ring-3"
-          placeholder="Write something useful…"
-          aria-invalid={Boolean(errors.value)}
-          {...register('value')}
-        />
-        {errors.value && (
-          <span className="text-destructive text-xs font-normal">{errors.value.message}</span>
-        )}
-      </label>
-      <div className="flex justify-end gap-2">
-        {onCancel && (
-          <Button type="button" variant="ghost" onClick={onCancel}>
-            Cancel
-          </Button>
-        )}
-        <Button type="submit" disabled={busy}>
-          {busy ? <LoaderCircle className="animate-spin" /> : initial ? <Pencil /> : <Plus />}
-          {initial ? 'Save changes' : 'Add widget'}
-        </Button>
-      </div>
-    </form>
+    <div className="border-input bg-card rounded-lg border px-4 py-3 shadow-xs">
+      <h2 className="text-foreground mb-4 text-sm font-medium">
+        Text Widget {widget.position + 1}
+      </h2>
+      <textarea
+        className="border-input focus-visible:border-ring focus-visible:ring-ring/30 aria-invalid:border-destructive text-foreground placeholder:text-muted-foreground min-h-16 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm outline-none focus-visible:ring-3"
+        aria-label={`Text Widget ${widget.position}`}
+        aria-invalid={Boolean(errors.value)}
+        {...register('value')}
+        onBlur={saveOnBlur}
+        rows={8}
+      />
+    </div>
   )
 }

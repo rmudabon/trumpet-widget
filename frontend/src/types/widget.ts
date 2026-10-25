@@ -7,5 +7,5 @@ export const widgetSchema = z.object({
 
 export type WidgetValues = z.infer<typeof widgetSchema>
 export type CreateWidgetPayload = WidgetValues & { position: number }
-export type UpdateWidgetPayload = Partial<WidgetValues>
+export type UpdateWidgetPayload = Pick<WidgetValues, 'value'>
 export type Widget = WidgetValues & { id: number; position: number }
