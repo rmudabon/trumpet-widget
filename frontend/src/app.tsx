@@ -35,7 +35,7 @@ export function App() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-4xl px-5 py-8 sm:px-8 sm:py-12">
       <h1 className="mb-8 text-2xl font-semibold tracking-tight">Your Widgets</h1>
-      <ul className="grid gap-3">
+      <ul className="space-y-8">
         {widgets.map((widget) => (
           <li key={widget.id}>
             <WidgetForm

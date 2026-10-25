@@ -1,6 +1,7 @@
-import type { CreateWidgetPayload, UpdateWidgetPayload, Widget } from '../types/widget'
+import { StatusCodes } from 'http-status-codes'
+import { widgetSchema, type CreateWidgetPayload, type UpdateWidgetPayload, type Widget } from '../types/widget'
 
-async function request<T>(url: string, requestConfig?: RequestInit): Promise<T> {
+async function request(url: string, requestConfig?: RequestInit): Promise<unknown> {
   const response = await fetch(url, {
     ...requestConfig,
     headers: { 'Content-Type': 'application/json', ...requestConfig?.headers },
@@ -11,28 +12,31 @@ async function request<T>(url: string, requestConfig?: RequestInit): Promise<T> 
     throw new Error(body || `Request failed (${response.status})`)
   }
 
-  if (response.status === 204) return undefined as T
-  return response.json() as Promise<T>
+  if (response.status === StatusCodes.NO_CONTENT) return undefined
+  return response.json()
 }
 
-export function getWidgets() {
-  return request<Widget[]>('/api/widgets/')
+export async function getWidgets(): Promise<Widget[]> {
+  const response = await request('/api/widgets/')
+  return widgetSchema.array().parse(response)
 }
 
-export function createWidget(values: CreateWidgetPayload) {
-  return request<Widget>('/api/widgets/', {
+export async function createWidget(values: CreateWidgetPayload): Promise<Widget> {
+  const response = await request('/api/widgets/', {
     method: 'POST',
     body: JSON.stringify(values),
   })
+  return widgetSchema.parse(response)
 }
 
-export function updateWidget(id: number, values: UpdateWidgetPayload) {
-  return request<Widget>(`/api/widgets/${id}/`, {
+export async function updateWidget(id: number, values: UpdateWidgetPayload): Promise<Widget> {
+  const response = await request(`/api/widgets/${id}/`, {
     method: 'PATCH',
     body: JSON.stringify(values),
   })
+  return widgetSchema.parse(response)
 }
 
-export function deleteWidget(id: number) {
-  return request<void>(`/api/widgets/${id}/`, { method: 'DELETE' })
+export async function deleteWidget(id: number): Promise<void> {
+  await request(`/api/widgets/${id}/`, { method: 'DELETE' })
 }
