@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { toast } from 'sonner'
+import { toast } from '../components/ui/toast'
 import { getWidgets } from '../api/widgets'
 
 export const widgetQueryKey = ['widgets'] as const
@@ -11,8 +11,11 @@ export function useWidgets() {
       try {
         return await getWidgets()
       } catch (error) {
-        toast.error('Unable to load widgets', {
+        toast.add({
+          title: 'Unable to load widgets',
           description: error instanceof Error ? error.message : 'An unexpected error occurred.',
+          type: 'error',
+          priority: 'high',
         })
         throw error
       }

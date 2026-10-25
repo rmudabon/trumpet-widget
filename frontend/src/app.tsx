@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { LoaderCircle, Plus } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from './components/ui/toast'
 import {
   createWidget as createWidgetRequest,
   updateWidget as updateWidgetRequest,
@@ -24,7 +24,7 @@ export function App() {
       }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: widgetQueryKey }),
     onError: (error) => {
-      toast.error('Unable to add widget', { description: error.message })
+      toast.add({ title: 'Unable to add widget', description: error.message, type: 'error', priority: 'high' })
     },
   })
   const updateWidget = useMutation({
@@ -32,7 +32,7 @@ export function App() {
       updateWidgetRequest(id, values),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: widgetQueryKey }),
     onError: (error) => {
-      toast.error('Unable to save widget', { description: error.message })
+      toast.add({ title: 'Unable to save widget', description: error.message, type: 'error', priority: 'high' })
     },
   })
 
