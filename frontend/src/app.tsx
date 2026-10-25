@@ -1,20 +1,18 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { LoaderCircle, Plus } from 'lucide-react'
+import { toast } from 'sonner'
 import {
   createWidget as createWidgetRequest,
-  getWidgets,
   updateWidget as updateWidgetRequest,
 } from './api/widgets'
 import { Button } from './components/ui/button'
 import { WidgetForm } from './components/widget-form'
+import { useWidgets, widgetQueryKey } from './hooks/use-widgets'
 import type { UpdateWidgetPayload } from './types/widget'
 
 export function App() {
   const queryClient = useQueryClient()
-  const widgetsQuery = useQuery({
-    queryKey: ['widgets'],
-    queryFn: getWidgets,
-  })
+  const widgetsQuery = useWidgets()
   const widgets = widgetsQuery.data ?? []
 
   const createWidget = useMutation({
@@ -24,12 +22,18 @@ export function App() {
         value: '',
         position: widgets.length + 1,
       }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['widgets'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: widgetQueryKey }),
+    onError: (error) => {
+      toast.error('Unable to add widget', { description: error.message })
+    },
   })
   const updateWidget = useMutation({
     mutationFn: ({ id, values }: { id: number; values: UpdateWidgetPayload }) =>
       updateWidgetRequest(id, values),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['widgets'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: widgetQueryKey }),
+    onError: (error) => {
+      toast.error('Unable to save widget', { description: error.message })
+    },
   })
 
   return (
