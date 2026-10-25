@@ -13,3 +13,4 @@ export type Widget = z.infer<typeof widgetSchema>
 export type WidgetValues = z.infer<typeof widgetFormSchema>
 export type CreateWidgetPayload = Pick<Widget, 'widget_type' | 'value' | 'position'>
 export type UpdateWidgetPayload = Partial<Pick<Widget, 'value'>>
+export type DeleteWidgetPayload = Pick<Widget, 'id'>
