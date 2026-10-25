@@ -1,9 +1,9 @@
-import type { Widget, WidgetValues } from '../types/widget'
+import type { CreateWidgetPayload, UpdateWidgetPayload, Widget } from '../types/widget'
 
-async function request<T>(url: string, init?: RequestInit): Promise<T> {
+async function request<T>(url: string, requestConfig?: RequestInit): Promise<T> {
   const response = await fetch(url, {
-    ...init,
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    ...requestConfig,
+    headers: { 'Content-Type': 'application/json', ...requestConfig?.headers },
   })
 
   if (!response.ok) {
@@ -19,16 +19,16 @@ export function getWidgets() {
   return request<Widget[]>('/api/widgets/')
 }
 
-export function createWidget(values: WidgetValues) {
+export function createWidget(values: CreateWidgetPayload) {
   return request<Widget>('/api/widgets/', {
     method: 'POST',
     body: JSON.stringify(values),
   })
 }
 
-export function updateWidget(id: number, values: WidgetValues) {
+export function updateWidget(id: number, values: UpdateWidgetPayload) {
   return request<Widget>(`/api/widgets/${id}/`, {
-    method: 'PUT',
+    method: 'PATCH',
     body: JSON.stringify(values),
   })
 }

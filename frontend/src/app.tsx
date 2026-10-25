@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, LoaderCircle, Pencil, Plus, RefreshCw, Shapes, Trash2, X } from 'lucide-react'
+import { Activity, LoaderCircle, Pencil, RefreshCw, Shapes, Trash2, X } from 'lucide-react'
 import { Button } from './components/ui/button'
 import {
   createWidget as createWidgetRequest,
@@ -13,19 +13,22 @@ import type { WidgetValues } from './types/widget'
 
 export function App() {
   const queryClient = useQueryClient()
-  const [showCreate, setShowCreate] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const widgetsQuery = useQuery({
     queryKey: ['widgets'],
     queryFn: getWidgets,
   })
+  const widgets = widgetsQuery.data ?? []
 
   const createWidget = useMutation({
-    mutationFn: (values: WidgetValues) => createWidgetRequest(values),
+    mutationFn: (values: WidgetValues) => {
+      const position = widgets.reduce((max, widget) => Math.max(max, widget.position), -1) + 1
+      return createWidgetRequest({ ...values, position })
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['widgets'] }),
   })
   const updateWidget = useMutation({
-    mutationFn: ({ id, values }: { id: number; values: WidgetValues }) =>
+    mutationFn: ({ id, values }: { id: number; values: Partial<WidgetValues> }) =>
       updateWidgetRequest(id, values),
     onSuccess: () => {
       setEditingId(null)
@@ -36,7 +39,6 @@ export function App() {
     mutationFn: deleteWidgetRequest,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['widgets'] }),
   })
-  const widgets = widgetsQuery.data ?? []
   const mutationError = createWidget.error ?? updateWidget.error ?? deleteWidget.error
 
   return (
@@ -73,49 +75,37 @@ export function App() {
             Create and organize the content in your widget feed.
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => void widgetsQuery.refetch()}
-            disabled={widgetsQuery.isFetching}
-          >
-            <RefreshCw className={widgetsQuery.isFetching ? 'animate-spin' : ''} /> Refresh
-          </Button>
-          <Button
-            onClick={() => {
-              setShowCreate((value) => !value)
-              createWidget.reset()
-            }}
-          >
-            {showCreate ? <X /> : <Plus />} {showCreate ? 'Close' : 'Add widget'}
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          onClick={() => void widgetsQuery.refetch()}
+          disabled={widgetsQuery.isFetching}
+        >
+          <RefreshCw className={widgetsQuery.isFetching ? 'animate-spin' : ''} /> Refresh
+        </Button>
       </section>
 
-      {showCreate && (
-        <section
-          className="border-border bg-card mb-8 rounded-xl border p-5 shadow-sm sm:p-6"
-          aria-labelledby="add-widget-title"
-        >
-          <h2 id="add-widget-title" className="mb-1 text-base font-semibold">
-            New widget
-          </h2>
-          <p className="text-muted-foreground mb-5 text-sm">
-            Add text to your feed and choose its display position.
+      <section
+        className="border-border bg-card mb-8 rounded-xl border p-5 shadow-sm sm:p-6"
+        aria-labelledby="add-widget-title"
+      >
+        <h2 id="add-widget-title" className="mb-1 text-base font-semibold">
+          New widget
+        </h2>
+        <p className="text-muted-foreground mb-5 text-sm">
+          Add text to your feed.
+        </p>
+        <WidgetForm
+          onSave={async (values) => {
+            await createWidget.mutateAsync(values)
+          }}
+          busy={createWidget.isPending}
+        />
+        {createWidget.error && (
+          <p className="text-destructive mt-4 text-sm" role="alert">
+            {createWidget.error.message}
           </p>
-          <WidgetForm
-            onSave={async (values) => {
-              await createWidget.mutateAsync(values)
-            }}
-            busy={createWidget.isPending}
-          />
-          {createWidget.error && (
-            <p className="text-destructive mt-4 text-sm" role="alert">
-              {createWidget.error.message}
-            </p>
-          )}
-        </section>
-      )}
+        )}
+      </section>
 
       <section aria-labelledby="widget-list-title">
         <div className="mb-4 flex items-center justify-between">
@@ -162,11 +152,6 @@ export function App() {
             <p className="text-muted-foreground mt-1 max-w-xs text-xs">
               Add your first widget to start building your feed.
             </p>
-            {!showCreate && (
-              <Button className="mt-4" size="sm" onClick={() => setShowCreate(true)}>
-                <Plus /> Add widget
-              </Button>
-            )}
           </div>
         ) : (
           <div className="grid gap-3">
@@ -215,7 +200,7 @@ export function App() {
                           </span>
                           <span className="text-border px-2">·</span>Widget #{widget.id}
                         </p>
-                        <p className="text-foreground text-sm leading-6 break-words whitespace-pre-wrap">
+                        <p className="text-foreground text-sm leading-6 wrap-break-word whitespace-pre-wrap">
                           {widget.value}
                         </p>
                       </div>
