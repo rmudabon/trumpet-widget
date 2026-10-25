@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { widgetSchema, type Widget, type WidgetValues } from '../types/widget'
+import { Textarea } from './ui/textarea'
+import { widgetFormSchema, type Widget, type WidgetValues } from '../types/widget'
 
 type WidgetFormProps = {
   widget: Widget
@@ -13,7 +14,7 @@ export function WidgetForm({ widget, onTextBlur }: WidgetFormProps) {
     handleSubmit,
     formState: { errors },
   } = useForm<WidgetValues>({
-    resolver: zodResolver(widgetSchema),
+    resolver: zodResolver(widgetFormSchema),
     defaultValues: { widget_type: widget.widget_type, value: widget.value },
   })
 
@@ -26,8 +27,8 @@ export function WidgetForm({ widget, onTextBlur }: WidgetFormProps) {
       <h2 className="text-foreground mb-4 text-sm font-medium">
         Text Widget {widget.position + 1}
       </h2>
-      <textarea
-        className="border-input focus-visible:border-ring focus-visible:ring-ring/30 aria-invalid:border-destructive text-foreground placeholder:text-muted-foreground min-h-16 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm outline-none focus-visible:ring-3"
+      <Textarea
+        className="min-h-16 resize-y"
         aria-label={`Text Widget ${widget.position}`}
         aria-invalid={Boolean(errors.value)}
         {...register('value')}
