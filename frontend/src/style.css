@@ -6,11 +6,10 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  font-family: system-ui, sans-serif;
-  color: #eef2ff;
-  background: #111827;
+  font-family: 'Geist Variable', sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  font-optical-sizing: auto;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -47,58 +46,6 @@
 body {
   margin: 0;
   min-width: 320px;
-}
-main {
-  max-width: 680px;
-  margin: 15vh auto;
-  padding: 2rem;
-}
-h1 {
-  font-size: clamp(2rem, 6vw, 3.5rem);
-  margin: 0.5rem 0;
-}
-p {
-  color: #cbd5e1;
-}
-.eyebrow {
-  color: #a5b4fc;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.8rem;
-}
-section {
-  padding: 1.5rem 0;
-}
-.indicator {
-  display: inline-block;
-  width: 0.65rem;
-  height: 0.65rem;
-  border-radius: 50%;
-  background: #fbbf24;
-  margin-right: 0.75rem;
-}
-.healthy {
-  background: #4ade80;
-}
-.unavailable {
-  background: #fb7185;
-}
-button {
-  border: 0;
-  border-radius: 0.4rem;
-  padding: 0.75rem 1rem;
-  font: inherit;
-  background: #c7d2fe;
-  color: #111827;
-  cursor: pointer;
-}
-button:disabled {
-  opacity: 0.5;
-  cursor: wait;
-}
-button:focus-visible {
-  outline: 3px solid #fff;
-  outline-offset: 4px;
 }
 
 @theme inline {
