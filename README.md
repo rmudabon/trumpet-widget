@@ -14,12 +14,11 @@ Open [http://localhost](http://localhost). Nginx serves the frontend and routes 
 
 ## Features
 
-- Add independent text widgets at the end of the list or between existing widgets.
+- Add text widgets at the end of the list or between existing widgets.
 - Save edits when a text area loses focus and warn before leaving with unsaved changes.
-- Restore saved widgets after a refresh; text is stored in PostgreSQL without an application-level length limit.
+- Load saved widgets after a refresh.
 - Delete widgets while keeping positions in order.
 - Show a retry option if widgets cannot be loaded.
-- Reuse shared button and text-area components.
 
 ## Tests
 
