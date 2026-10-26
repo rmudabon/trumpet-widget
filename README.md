@@ -12,6 +12,15 @@ docker compose up --build
 
 Open [http://localhost](http://localhost). Nginx serves the frontend and routes `/api/` to Django. PostgreSQL data persists in a Docker volume. To stop the services, run `docker compose down`.
 
+## Features
+
+- Add independent text widgets at the end of the list or between existing widgets.
+- Save edits when a text area loses focus and warn before leaving with unsaved changes.
+- Restore saved widgets after a refresh; text is stored in PostgreSQL without an application-level length limit.
+- Delete widgets while keeping positions in order.
+- Show a retry option if widgets cannot be loaded.
+- Reuse shared button and text-area components.
+
 ## Tests
 
 With the services running, run the backend tests and checks:
