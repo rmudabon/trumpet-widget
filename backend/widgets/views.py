@@ -1,9 +1,17 @@
-from django.shortcuts import render
-from .models import Widget
-from .serializers import WidgetSerializer
+from django.db import transaction
+from django.db.models import F
 from rest_framework.viewsets import ModelViewSet
 
-# Create your views here.
+from .models import Widget
+from .serializers import WidgetSerializer
+
+
 class WidgetViewSet(ModelViewSet):
     queryset = Widget.objects.all().order_by("position")
     serializer_class = WidgetSerializer
+
+    @transaction.atomic
+    def perform_destroy(self, instance):
+        position = instance.position
+        instance.delete()
+        Widget.objects.filter(position__gt=position).update(position=F("position") - 1)

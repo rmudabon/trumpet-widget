@@ -116,3 +116,37 @@ def test_updating_nonexistent_widget_returns_not_found():
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.parametrize("deleted_position", [1, 2, 3])
+def test_deleting_widget_shifts_only_later_positions(deleted_position):
+    client = APIClient()
+    widgets = [
+        create_widget(client, value=f"Widget {position}", position=position)
+        for position in range(1, 4)
+    ]
+    deleted = widgets[deleted_position - 1]
+
+    response = client.delete(reverse("widget-detail", args=[deleted["id"]]))
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    remaining = client.get(reverse("widget-list")).json()
+    assert [(widget["id"], widget["value"], widget["position"]) for widget in remaining] == [
+        (
+            widget["id"],
+            widget["value"],
+            widget["position"] - (widget["position"] > deleted_position),
+        )
+        for widget in widgets
+        if widget["id"] != deleted["id"]
+    ]
+
+
+def test_deleting_nonexistent_widget_leaves_positions_unchanged():
+    client = APIClient()
+    widget = create_widget(client, value="Unchanged", position=3)
+
+    response = client.delete(reverse("widget-detail", args=[widget["id"] + 1]))
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert client.get(reverse("widget-list")).json() == [widget]
