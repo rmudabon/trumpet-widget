@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { Textarea } from './ui/textarea'
 import { widgetFormSchema, type Widget, type WidgetValues } from '../types/widget'
@@ -18,11 +19,26 @@ export function WidgetForm({ widget, canInsertAfter, onInsertAfter, onTextBlur }
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<WidgetValues>({
     resolver: zodResolver(widgetFormSchema),
     defaultValues: { widget_type: widget.widget_type, value: widget.value },
   })
+  const hasUnsavedChanges = watch('value') !== widget.value
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) return
+
+    function warnBeforeUnload(event: BeforeUnloadEvent) {
+      event.preventDefault()
+      // Legacy support
+      event.returnValue = 'Unsaved changes'
+    }
+
+    window.addEventListener('beforeunload', warnBeforeUnload)
+    return () => window.removeEventListener('beforeunload', warnBeforeUnload)
+  }, [hasUnsavedChanges])
 
   const saveOnBlur = handleSubmit(async ({ value }) => {
     if (value === widget.value) return
@@ -55,6 +71,7 @@ export function WidgetForm({ widget, canInsertAfter, onInsertAfter, onTextBlur }
             <X />
           </Button>
         </div>
+        {hasUnsavedChanges && <p className='text-orange-400 text-xs my-2 font-semibold'>Unsaved Changes</p>}
         <Textarea
           className="min-h-16 resize-y"
           aria-label={`Text Widget ${widget.position}`}
@@ -63,6 +80,7 @@ export function WidgetForm({ widget, canInsertAfter, onInsertAfter, onTextBlur }
           onBlur={saveOnBlur}
           rows={8}
         />
+        <p className='text-neutral-600 text-xs my-2'>Text is saved automatically when you leave this field.</p>
       </div>
       {canInsertAfter && (
         <div className='flex items-center justify-center'>
