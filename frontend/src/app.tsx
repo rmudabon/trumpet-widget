@@ -23,7 +23,9 @@ export function App() {
         value: '',
         position: widgets.length + 1,
       }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: widgetQueryKey }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: widgetQueryKey })
+    },
     onError: (error) => {
       toast.add({
         title: 'Unable to add widget',
@@ -36,10 +38,16 @@ export function App() {
   const updateWidget = useMutation({
     mutationFn: ({ id, values }: { id: number; values: UpdateWidgetPayload }) =>
       updateWidgetRequest(id, values),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: widgetQueryKey }),
+    onSuccess: () => {
+      toast.add({
+        title: 'Changes saved.',
+        type: 'success'
+      })
+      queryClient.invalidateQueries({ queryKey: widgetQueryKey })
+    },
     onError: (error) => {
       toast.add({
-        title: 'Unable to save widget',
+        title: 'Unable to update widget.',
         description: error.message,
         type: 'error',
         priority: 'high',
