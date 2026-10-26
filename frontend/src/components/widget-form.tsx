@@ -7,6 +7,7 @@ import { widgetFormSchema, type Widget, type WidgetValues } from '../types/widge
 import { deleteWidget as deleteWidgetRequest } from '@/api/widgets'
 import { Button } from './ui/button'
 import { Plus, X } from 'lucide-react'
+import { toast } from './ui/toast'
 
 type WidgetFormProps = {
   widget: Widget
@@ -53,6 +54,14 @@ export function WidgetForm({ widget, canInsertAfter, onInsertAfter, onTextBlur }
   const deleteWidget = useMutation({
     mutationFn: (id: number) => deleteWidgetRequest(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['widgets'] }),
+    onError: (error) => {
+      toast.add({
+        title: 'Unable to delete widget.',
+        description: error.message,
+        type: 'error',
+        priority: 'high',
+      })
+    }
   })
 
   return (
