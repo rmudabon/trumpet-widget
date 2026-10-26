@@ -89,6 +89,26 @@ Use `uv add --dev <package>` for backend development tools. Commit the manifests
 
 ## Checks
 
+### Frontend interaction tests
+
+Vitest runs the React Testing Library suite in jsdom. From `frontend`, run:
+
+```sh
+npm test
+npm run test:watch
+```
+
+Or run the suite in the frontend container after refreshing its dependencies:
+
+```sh
+docker compose run --rm --no-deps frontend npm ci
+docker compose run --rm --no-deps frontend npm test
+```
+
+The tests use real React Query providers, forms, and toast UI, with mocked HTTP responses. They cover fetched widget values, adding widgets (including the first widget), independent edits, saving on blur, save errors that preserve drafts and allow retries, and deleting the intended widget. No running Django or PostgreSQL service is required. Use the Node version in the frontend Docker image; the installed jsdom version requires Node 22.22.2 or newer within Node 22.
+
+### Static checks and backend tests
+
 With services running:
 
 ```sh

@@ -23,7 +23,12 @@ export function WidgetForm({ widget, onTextBlur }: WidgetFormProps) {
   })
 
   const saveOnBlur = handleSubmit(async ({ value }) => {
-    if (value !== widget.value) await onTextBlur(value)
+    if (value === widget.value) return
+    try {
+      await onTextBlur(value)
+    } catch {
+      // The mutation shows the error toast. Keep the draft available for retry.
+    }
   })
 
   const queryClient = useQueryClient()
@@ -37,6 +42,7 @@ export function WidgetForm({ widget, onTextBlur }: WidgetFormProps) {
       <div className="mb-4 flex flex-row items-center justify-between">
         <h2 className="text-foreground text-sm font-medium">Text Widget {widget.position}</h2>
         <Button
+          aria-label={`Delete Text Widget ${widget.position}`}
           className="cursor-pointer"
           disabled={deleteWidget.isPending}
           variant="destructive"
