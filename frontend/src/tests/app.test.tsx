@@ -35,8 +35,13 @@ beforeEach(() => {
     }
 
     if (url === '/api/widgets/' && method === 'POST') {
-      const widget: Widget = { id: 33, ...JSON.parse(String(options?.body)) }
+      const payload = JSON.parse(String(options?.body)) as Omit<Widget, 'id'>
+      widgets = widgets.map((widget) =>
+        widget.position >= payload.position ? { ...widget, position: widget.position + 1 } : widget,
+      )
+      const widget: Widget = { id: 33, ...payload }
       widgets.push(widget)
+      widgets.sort((a, b) => a.position - b.position)
       return Response.json(widget, { status: 201 })
     }
 
@@ -112,6 +117,26 @@ describe('widgets', () => {
     })
   })
 
+  it('inserts a widget after the selected widget and shifts later widgets', async () => {
+    const user = renderApp()
+    await screen.findAllByRole('textbox')
+
+    expect(screen.getAllByRole('button', { name: /^Insert widget after/ })).toHaveLength(1)
+    expect(screen.queryByRole('button', { name: 'Insert widget after 2' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Insert widget after 1' }))
+
+    await waitFor(() => expect(screen.getAllByRole('textbox')).toHaveLength(3))
+    expect(screen.getByRole('textbox', { name: 'Text Widget 1' })).toHaveValue('Saved value A')
+    expect(screen.getByRole('textbox', { name: 'Text Widget 2' })).toHaveValue('')
+    expect(screen.getByRole('textbox', { name: 'Text Widget 3' })).toHaveValue('Saved value B')
+    expect(fetchMock).toHaveBeenCalledWith('/api/widgets/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ widget_type: 'text', value: '', position: 2 }),
+    })
+  })
+
   it('can add the first widget to an empty list', async () => {
     widgets = []
     const user = renderApp()
@@ -172,8 +197,16 @@ describe('widgets', () => {
     await user.tab()
 
     const notifications = screen.getByRole('region', { name: 'Notifications' })
-    expect(await within(notifications).findByText('Unable to update widget.')).toBeVisible()
-    expect(within(notifications).getByText('Please try again.')).toBeVisible()
+    expect(
+      await within(notifications).findByText('Unable to update widget.', {
+        selector: '[data-slot="toast-title"]',
+      }),
+    ).toBeVisible()
+    expect(
+      within(notifications).getByText('Please try again.', {
+        selector: '[data-slot="toast-description"]',
+      }),
+    ).toBeVisible()
     expect(first).toHaveValue('Unsaved draft')
     expect(screen.getByRole('textbox', { name: 'Text Widget 2' })).toHaveValue('Saved value B')
     expect(widgets[0].value).toBe('Saved value A')

@@ -17,11 +17,11 @@ export function App() {
   const widgets = data ?? []
 
   const createWidget = useMutation({
-    mutationFn: () =>
+    mutationFn: (position: number) =>
       createWidgetRequest({
         widget_type: 'text',
         value: '',
-        position: widgets.length + 1,
+        position,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: widgetQueryKey })
@@ -41,7 +41,7 @@ export function App() {
     onSuccess: () => {
       toast.add({
         title: 'Changes saved.',
-        type: 'success'
+        type: 'success',
       })
       queryClient.invalidateQueries({ queryKey: widgetQueryKey })
     },
@@ -60,14 +60,14 @@ export function App() {
       <h1 className="mb-8 text-2xl font-semibold tracking-tight">Your Widgets</h1>
       {isLoading && <Skeleton className="h-32 w-full rounded-lg" />}
       {!isLoading && widgets.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8">
+        <section className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8">
           <h2 className="text-xl font-semibold">No widgets</h2>
           <p className="text-secondary-foreground mt-1">Add one to get started.</p>
           <Button
             className="my-8 cursor-pointer"
             aria-label="Add widget"
             disabled={createWidget.isPending || isLoading}
-            onClick={() => createWidget.mutate()}
+            onClick={() => createWidget.mutate(1)}
           >
             {createWidget.isPending ? (
               <>
@@ -80,15 +80,17 @@ export function App() {
               </>
             )}
           </Button>
-        </div>
+        </section>
       )}
       {!isLoading && widgets.length > 0 && (
-        <>
+        <section>
           <ul className="space-y-8">
-            {widgets.map((widget) => (
+            {widgets.map((widget, index) => (
               <li key={widget.id}>
                 <WidgetForm
                   widget={widget}
+                  canInsertAfter={index < widgets.length - 1}
+                  onInsertAfter={() => createWidget.mutate(widget.position + 1)}
                   onTextBlur={(value) =>
                     updateWidget.mutateAsync({ id: widget.id, values: { value } })
                   }
@@ -101,7 +103,7 @@ export function App() {
               className="mt-4 cursor-pointer"
               aria-label="Add widget"
               disabled={createWidget.isPending || isLoading}
-              onClick={() => createWidget.mutate()}
+              onClick={() => createWidget.mutate(widgets.length + 1)}
             >
               {createWidget.isPending ? (
                 <>
@@ -115,7 +117,7 @@ export function App() {
               )}
             </Button>
           </div>
-        </>
+        </section>
       )}
       <footer className="border-border text-muted-foreground mt-12 flex justify-between border-t pt-4 text-[11px]">
         <span>Rowmel Marco Dabon</span>

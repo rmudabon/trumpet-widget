@@ -11,6 +11,12 @@ class WidgetViewSet(ModelViewSet):
     serializer_class = WidgetSerializer
 
     @transaction.atomic
+    def perform_create(self, serializer):
+        position = serializer.validated_data["position"]
+        Widget.objects.filter(position__gte=position).update(position=F("position") + 1)
+        serializer.save()
+
+    @transaction.atomic
     def perform_destroy(self, instance):
         position = instance.position
         instance.delete()

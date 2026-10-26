@@ -45,6 +45,36 @@ def test_create_multiple_widgets_gives_each_an_independent_id_and_value():
     assert second["value"] == "Second widget"
 
 
+@pytest.mark.parametrize("insert_position", [1, 2, 4])
+def test_create_widget_inserts_at_position_and_shifts_later_widgets(insert_position):
+    client = APIClient()
+    original_widgets = [
+        create_widget(client, value=f"Widget {position}", position=position)
+        for position in range(1, 4)
+    ]
+
+    inserted = client.post(
+        reverse("widget-list"),
+        {"widget_type": "text", "value": "Inserted widget", "position": insert_position},
+        format="json",
+    )
+
+    assert inserted.status_code == status.HTTP_201_CREATED
+    assert inserted.json()["position"] == insert_position
+    saved_widgets = client.get(reverse("widget-list")).json()
+    expected_widgets = [
+        (
+            widget["value"],
+            widget["position"] + (widget["position"] >= insert_position),
+        )
+        for widget in original_widgets
+    ]
+    expected_widgets.append(("Inserted widget", insert_position))
+    assert [(widget["value"], widget["position"]) for widget in saved_widgets] == sorted(
+        expected_widgets, key=lambda widget: widget[1]
+    )
+
+
 def test_update_widget_value_persists():
     client = APIClient()
     widget = create_widget(client, value="Before update", position=1)
