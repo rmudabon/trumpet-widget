@@ -2,6 +2,7 @@ services:
   frontend:
     build: ./frontend
     init: true
+    command: ["sh", "./docker-entrypoint.sh"]
     volumes:
       - ./frontend:/app
       - frontend_deps:/app/node_modules
