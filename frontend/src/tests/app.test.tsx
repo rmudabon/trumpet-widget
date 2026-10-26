@@ -100,6 +100,22 @@ describe('widgets', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/widgets/', expect.any(Object))
   })
 
+  it('shows a fetch error with a retry button and loads widgets after retrying', async () => {
+    fetchMock.mockRejectedValueOnce(new Error('Network unavailable'))
+    const user = renderApp()
+
+    expect(await screen.findByRole('heading', { name: 'Unable to load widgets' })).toBeVisible()
+    expect(screen.queryByText('No widgets')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Retry' }))
+
+    expect(await screen.findByRole('textbox', { name: 'Text Widget 1' })).toHaveValue(
+      'Saved value A',
+    )
+    expect(screen.getByRole('textbox', { name: 'Text Widget 2' })).toHaveValue('Saved value B')
+    expect(fetchMock.mock.calls.filter(([url]) => url === '/api/widgets/')).toHaveLength(2)
+  })
+
   it('adds another widget when Add is clicked', async () => {
     const user = renderApp()
     await screen.findAllByRole('textbox')

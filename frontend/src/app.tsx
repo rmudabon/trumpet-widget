@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { LoaderCircle, Plus } from 'lucide-react'
 import { toast } from './components/ui/toast'
+import { WidgetFetchError } from './components/widget-fetch-error'
 import {
   createWidget as createWidgetRequest,
   updateWidget as updateWidgetRequest,
@@ -13,8 +14,9 @@ import { Skeleton } from './components/ui/skeleton'
 
 export function App() {
   const queryClient = useQueryClient()
-  const { data, isLoading } = useWidgets()
+  const { data, isError, isFetching, isLoading, refetch } = useWidgets()
   const widgets = data ?? []
+  const hasLoadError = isError && data === undefined
 
   const createWidget = useMutation({
     mutationFn: (position: number) =>
@@ -59,7 +61,10 @@ export function App() {
     <main className="mx-auto min-h-screen w-full max-w-4xl px-5 py-8 sm:px-8 sm:py-12">
       <h1 className="mb-8 text-2xl font-semibold tracking-tight">Your Widgets</h1>
       {isLoading && <Skeleton className="h-32 w-full rounded-lg" />}
-      {!isLoading && widgets.length === 0 && (
+      {!isLoading && hasLoadError && (
+        <WidgetFetchError isRetrying={isFetching} onRetry={() => void refetch()} />
+      )}
+      {!isLoading && !hasLoadError && widgets.length === 0 && (
         <section className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8">
           <h2 className="text-xl font-semibold">No widgets</h2>
           <p className="text-secondary-foreground mt-1">Add one to get started.</p>
@@ -82,7 +87,7 @@ export function App() {
           </Button>
         </section>
       )}
-      {!isLoading && widgets.length > 0 && (
+      {!isLoading && !hasLoadError && widgets.length > 0 && (
         <section>
           <ul className="space-y-8">
             {widgets.map((widget, index) => (
