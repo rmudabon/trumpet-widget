@@ -5,7 +5,7 @@ import { Textarea } from './ui/textarea'
 import { widgetFormSchema, type Widget, type WidgetValues } from '../types/widget'
 import { deleteWidget as deleteWidgetRequest } from '@/api/widgets'
 import { Button } from './ui/button'
-import { Trash } from 'lucide-react'
+import { X } from 'lucide-react'
 
 type WidgetFormProps = {
   widget: Widget
@@ -43,7 +43,7 @@ export function WidgetForm({ widget, onTextBlur }: WidgetFormProps) {
           size="icon"
           onClick={() => deleteWidget.mutate(widget.id)}
         >
-          <Trash />
+          <X />
         </Button>
       </div>
       <Textarea

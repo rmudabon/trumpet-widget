@@ -9,11 +9,12 @@ import { Button } from './components/ui/button'
 import { WidgetForm } from './components/widget-form'
 import { useWidgets, widgetQueryKey } from './hooks/use-widgets'
 import type { UpdateWidgetPayload } from './types/widget'
+import { Skeleton } from './components/ui/skeleton'
 
 export function App() {
   const queryClient = useQueryClient()
-  const widgetsQuery = useWidgets()
-  const widgets = widgetsQuery.data ?? []
+  const { data, isLoading } = useWidgets()
+  const widgets = data ?? []
 
   const createWidget = useMutation({
     mutationFn: () =>
@@ -24,7 +25,12 @@ export function App() {
       }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: widgetQueryKey }),
     onError: (error) => {
-      toast.add({ title: 'Unable to add widget', description: error.message, type: 'error', priority: 'high' })
+      toast.add({
+        title: 'Unable to add widget',
+        description: error.message,
+        type: 'error',
+        priority: 'high',
+      })
     },
   })
   const updateWidget = useMutation({
@@ -32,42 +38,77 @@ export function App() {
       updateWidgetRequest(id, values),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: widgetQueryKey }),
     onError: (error) => {
-      toast.add({ title: 'Unable to save widget', description: error.message, type: 'error', priority: 'high' })
+      toast.add({
+        title: 'Unable to save widget',
+        description: error.message,
+        type: 'error',
+        priority: 'high',
+      })
     },
   })
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-4xl px-5 py-8 sm:px-8 sm:py-12">
       <h1 className="mb-8 text-2xl font-semibold tracking-tight">Your Widgets</h1>
-      <ul className="space-y-8">
-        {widgets.map((widget) => (
-          <li key={widget.id}>
-            <WidgetForm
-              widget={widget}
-              onTextBlur={(value) => updateWidget.mutateAsync({ id: widget.id, values: { value } })}
-            />
-          </li>
-        ))}
-      </ul>
-      <div className="flex flex-row items-center justify-center">
-        <Button
-          className="mt-4 cursor-pointer"
-          aria-label="Add widget"
-          disabled={createWidget.isPending || widgetsQuery.isLoading}
-          onClick={() => createWidget.mutate()}
-        >
-          {createWidget.isPending ? (
-            <>
-              <LoaderCircle className="animate-spin" />
-              Loading
-            </>
-          ) : (
-            <>
-              <Plus /> Add Field
-            </>
-          )}
-        </Button>
-      </div>
+      {isLoading && <Skeleton className="h-32 w-full rounded-lg" />}
+      {!isLoading && widgets.length === 0 && (
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8">
+          <h2 className="text-xl font-semibold">No widgets</h2>
+          <p className="text-secondary-foreground mt-1">Add one to get started.</p>
+          <Button
+            className="my-8 cursor-pointer"
+            aria-label="Add widget"
+            disabled={createWidget.isPending || isLoading}
+            onClick={() => createWidget.mutate()}
+          >
+            {createWidget.isPending ? (
+              <>
+                <LoaderCircle className="animate-spin" />
+                Loading
+              </>
+            ) : (
+              <>
+                <Plus /> Add Field
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+      {!isLoading && widgets.length > 0 && (
+        <>
+          <ul className="space-y-8">
+            {widgets.map((widget) => (
+              <li key={widget.id}>
+                <WidgetForm
+                  widget={widget}
+                  onTextBlur={(value) =>
+                    updateWidget.mutateAsync({ id: widget.id, values: { value } })
+                  }
+                />
+              </li>
+            ))}
+          </ul>
+          <div className="flex flex-row items-center justify-center">
+            <Button
+              className="mt-4 cursor-pointer"
+              aria-label="Add widget"
+              disabled={createWidget.isPending || isLoading}
+              onClick={() => createWidget.mutate()}
+            >
+              {createWidget.isPending ? (
+                <>
+                  <LoaderCircle className="animate-spin" />
+                  Loading
+                </>
+              ) : (
+                <>
+                  <Plus /> Add Field
+                </>
+              )}
+            </Button>
+          </div>
+        </>
+      )}
       <footer className="border-border text-muted-foreground mt-12 flex justify-between border-t pt-4 text-[11px]">
         <span>Rowmel Marco Dabon</span>
       </footer>

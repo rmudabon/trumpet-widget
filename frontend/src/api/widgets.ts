@@ -1,5 +1,10 @@
 import { StatusCodes } from 'http-status-codes'
-import { widgetSchema, type CreateWidgetPayload, type UpdateWidgetPayload, type Widget } from '../types/widget'
+import {
+  widgetSchema,
+  type CreateWidgetPayload,
+  type UpdateWidgetPayload,
+  type Widget,
+} from '../types/widget'
 
 async function request(url: string, requestConfig?: RequestInit): Promise<unknown> {
   const response = await fetch(url, {
