@@ -4,20 +4,26 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Widget',
+            name="Widget",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('widget_type', models.CharField(choices=[('text', 'Text')], default='text', max_length=10)),
-                ('value', models.TextField(blank=True)),
-                ('position', models.PositiveIntegerField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                (
+                    "widget_type",
+                    models.CharField(choices=[("text", "Text")], default="text", max_length=10),
+                ),
+                ("value", models.TextField(blank=True)),
+                ("position", models.PositiveIntegerField()),
             ],
         ),
     ]

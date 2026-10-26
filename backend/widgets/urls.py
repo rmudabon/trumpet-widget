@@ -5,9 +5,6 @@ from .views import WidgetViewSet
 
 router = SimpleRouter()
 
-router.register(r'widgets', WidgetViewSet, basename='widget')
+router.register(r"widgets", WidgetViewSet, basename="widget")
 
-urlpatterns = [
-    path('', include(router.urls))
-]
-
+urlpatterns = [path("", include(router.urls))]
