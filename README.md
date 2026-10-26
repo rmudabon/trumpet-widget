@@ -28,14 +28,54 @@ Run the React Testing Library suite in the frontend container:
 docker compose exec frontend npm run test
 ```
 
-The tests cover loading, adding, inserting, editing, saving failures, and deleting widgets. Backend tests include long text and position changes.
+The tests cover loading, adding, inserting, editing, saving failures, handling fetch errors, and deleting widgets. Backend tests include long text and position changes.
 
-## Approach
+## Approach and Tradeoffs
 
-Each widget is its own database row with a text value and position. React renders a separate form for every row and saves edits when its text area loses focus. On page load, the frontend fetches the saved widgets from the API. PostgreSQL's `TextField` supports long text without a small application-level length limit.
+I approached this project with user experience, developer experience, and simplicity in mind.
 
-Creating or deleting a widget shifts affected positions with a single database update using Django `F()` expressions. This avoids loading and saving each affected widget individually. The update work still grows with the number of shifted rows, which is a good tradeoff for this small ordered list.
+### Project Setup
 
-Reusable buttons and text areas keep the UI consistent.
+I used Docker to make this project easier to run across all platforms and machines.
 
-With more time, I would add browser-based end-to-end tests and evaluate autosaving drafts so edits do not depend on blur.
+### Frontend
+
+I used Zod schemas as API contracts so that they act as the source of truth when it comes to validation and typing.
+This approach adds additional maintenance overhead when adding or updating API requests, but I believe it is worth the benefit of data integrity and better developer experience.
+
+For data fetching, I used **TanStack Query** to manage API data fetching and caching.
+
+I chose blur-to-save to send one request after the user leaves a field. The tradeoff is that a draft remains unsaved while the field is focused, so the app warns before leaving.
+
+I used ShadCN as the UI kit and Tailwind CSS to easily set up the design system and accessibility elements.
+
+Reusable UI elements like buttons and text areas keep the interface consistent.
+
+### Testing
+
+Tests focus on critical flows and behavior.
+I opted to use integration and component tests.
+
+Frontend component and interaction tests use Vitest and React Testing Library; backend API tests use pytest.
+
+### Backend
+
+Only one application model (`Widget`) is used for this project to keep architecture and functionality simple, testable, and maintainable given the constraints.
+
+I initially considered three database entities for the database design (`Form`, `FormWidget`, `FormWidgetResponse`) to allow flexibility and scalability, but I scaled back to avoid unnecessary complexity.
+
+Each widget is its own database row with a text value and position.
+
+Creating or deleting a widget shifts affected positions with a single database update using Django `F()` expressions, avoiding loading and saving each widget individually in Python. The work still grows with the number of affected rows, which is acceptable for this list.
+
+## Future Features
+
+Given more time:
+
+1. Add browser-based end-to-end tests via Playwright
+2. Add a title field to the text widget
+3. Support image widgets
+4. Add drag-and-drop widget reordering
+5. A more extensive token-based design system for custom branding
+6. Evolve the database tables to support reusable widgets across forms or different widget lists
+7. Improve autosaving behavior via debouncing and syncing save requests
